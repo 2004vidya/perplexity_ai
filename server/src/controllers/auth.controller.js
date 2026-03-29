@@ -21,18 +21,18 @@ const registerUser = async (req, res) => {
 
         const user = await userModel.create({ username, email, password });
         const emailverificationToken = jwt.sign({email: user.email}, process.env.JWT_SECRET,);
-        await sendEmail({
-            to: email,
-            subject: "Verify your email",
-            text: "Please verify your email",
-            html: `
-            <div>
-                <p>Hello ${user.username},</p>
-                <p>Welcome to perplexity AI.Please verify your email by clicking on the link below</p>
-                <a href="http://localhost:3000/api/auth/verify-email?token=${emailverificationToken}">Verify your email</a>
-            </div>
-            `
-        });
+        // await sendEmail({
+        //     to: email,
+        //     subject: "Verify your email",
+        //     text: "Please verify your email",
+        //     html: `
+        //     <div>
+        //         <p>Hello ${user.username},</p>
+        //         <p>Welcome to perplexity AI.Please verify your email by clicking on the link below</p>
+        //         <a href="http://localhost:3000/api/auth/verify-email?token=${emailverificationToken}">Verify your email</a>
+        //     </div>
+        //     `
+        // });
 
         res.status(201).json({ message: "User created successfully", success: true, user });
     } catch (error) {
@@ -46,28 +46,28 @@ const registerUser = async (req, res) => {
  * @access Public
  */
 
-const verifyEmail = async (req, res) => {
-    try {
-        const { token } = req.query;
-        const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await userModel.findOne({ email: decodedToken.email });
-        if (!user) {
-            return res.status(404).json({ message: "User not found", success: false, err: "User not found" });
-        }
-        user.verified = true;
-        await user.save();
-        const html= `
-        <div>
-            <h1>Email verified successfully</h1>
-            <p>Your email has been verified successfully. You can now login to your account</p>
-        </div>
-        `
-        res.send(html);
-        res.status(200).json({ message: "Email verified successfully", success: true, user });
-    } catch (error) {
-        res.status(500).json({ message: error.message, stack: error.stack });
-    }
-}
+// const verifyEmail = async (req, res) => {
+//     try {
+//         const { token } = req.query;
+//         const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+//         const user = await userModel.findOne({ email: decodedToken.email });
+//         if (!user) {
+//             return res.status(404).json({ message: "User not found", success: false, err: "User not found" });
+//         }
+//         user.verified = true;
+//         await user.save();
+//         const html= `
+//         <div>
+//             <h1>Email verified successfully</h1>
+//             <p>Your email has been verified successfully. You can now login to your account</p>
+//         </div>
+//         `
+//         res.send(html);
+//         res.status(200).json({ message: "Email verified successfully", success: true, user });
+//     } catch (error) {
+//         res.status(500).json({ message: error.message, stack: error.stack });
+//     }
+// }
 
 /**
  * @description Login user
@@ -86,9 +86,9 @@ const loginUser=async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Invalid password", success: false, err: "Invalid password" });
         }
-        if(!user.verified){
-            return res.status(401).json({ message: "Please verify your email", success: false, err: "Please verify your email" });
-        }
+        // if(!user.verified){
+        //     return res.status(401).json({ message: "Please verify your email", success: false, err: "Please verify your email" });
+        // }
         const token = jwt.sign({email: user.email}, process.env.JWT_SECRET,);
         res.cookie("token", token, {
             httpOnly: true,
@@ -112,4 +112,4 @@ const getMe = async (req, res) => {
 }
 
 
-export { registerUser, verifyEmail,loginUser,getMe };
+export { registerUser,loginUser,getMe };

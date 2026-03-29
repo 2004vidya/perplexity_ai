@@ -10,6 +10,10 @@ const chatSchema = new mongoose.Schema({
         required:true,
         trim:true
     },
+    content:{
+        type:String,
+        trim:true
+    }
     // messages:{
     //     type:mongoose.Schema.Types.ObjectId,
     //     ref:"Message"
