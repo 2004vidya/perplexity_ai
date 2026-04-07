@@ -10,12 +10,14 @@ export async function sendMessage(req, res) {
       chat = null;
 
     if (!chatId) {
-      const title = await generateTitle(message);
+      title = await generateTitle(message);
       console.log(title);
       chat = await chatModel.create({
         user: req.user.id,
         title,
       });
+    } else {
+      chat = await chatModel.findById(chatId);
     }
 
     const userMessage = await messageModel.create({
@@ -40,7 +42,9 @@ export async function sendMessage(req, res) {
 
     res.status(201).json({ aiMessage, title, chat });
   } catch (error) {
-    console.log(error);
+    res.status(500).json({
+      message:"Internal server error"
+    })
   }
 }
 
@@ -53,7 +57,9 @@ export async function getChats(req,res){
 
     res.status(200).json({message:"Chats retrived successfully",chats})
   } catch (error) {
-    console.log(error)
+    res.status(500).json({
+      message:"Internal server error"
+    })
   }
 }
 
@@ -78,6 +84,8 @@ export async function getMessages(req,res){
     res.status(200).json({message:"Messages retrived successfully",messages})
     
   } catch (error) {
-    console.log(error)
+     res.status(500).json({
+      message:"Internal server error"
+    })
   }
 }

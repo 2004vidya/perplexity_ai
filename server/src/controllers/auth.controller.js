@@ -89,11 +89,11 @@ const loginUser=async (req, res) => {
         // if(!user.verified){
         //     return res.status(401).json({ message: "Please verify your email", success: false, err: "Please verify your email" });
         // }
-        const token = jwt.sign({email: user.email}, process.env.JWT_SECRET,);
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET,{expiresIn:"1d"});
         res.cookie("token", token, {
             httpOnly: true,
-            secure: true,
-            sameSite: "strict",
+            secure: true,       // set to true only in production (HTTPS)
+            sameSite: "lax",
             maxAge: 24 * 60 * 60 * 1000
         });
         res.status(200).json({ message: "Login successful", success: true, user });
