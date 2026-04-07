@@ -15,7 +15,7 @@
 //     },[])
 //   return (
 //     <main className='h-screen w-full flex bg-neutral-800'>
-      
+
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useChat } from "../hooks/useChat";
@@ -77,7 +77,7 @@ function Sidebar({ active, setActive, threads, newThread, onSelectChat }) {
           className="text-white font-semibold tracking-wide text-sm"
           style={{ fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.08em" }}
         >
-          NEXUS AI
+          INTERA AI
         </span>
       </div>
 
@@ -329,7 +329,7 @@ function ChatMessage({ msg, isNew }) {
 
 export default function Dashboard() {
   const { initializeSocket, handleSendMessage, handleGetChats, handleGetMessages } = useChat();
-  const {chats,currentChatId} = useSelector((state)=>state.chat);
+  const { chats, currentChatId } = useSelector((state) => state.chat);
   console.log('Current user:', chats);
 
   const [messages, setMessages] = useState([
@@ -339,7 +339,7 @@ export default function Dashboard() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeNav, setActiveNav] = useState("Search");
-  const [model, setModel] = useState("Nexus Pro");
+  const [model, setModel] = useState("intera Pro");
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -642,16 +642,16 @@ export default function Dashboard() {
                     className="text-xs bg-transparent border-0 outline-none cursor-pointer"
                     style={{ color: "rgba(255,255,255,0.4)", fontFamily: "'DM Sans', sans-serif" }}
                   >
-                    <option value="Nexus Pro" style={{ background: "#0d1117" }}>Nexus Pro</option>
-                    <option value="Nexus Fast" style={{ background: "#0d1117" }}>Nexus Fast</option>
-                    <option value="Nexus Mini" style={{ background: "#0d1117" }}>Nexus Mini</option>
+                    <option value="intera Pro" style={{ background: "#0d1117" }}>intera Pro</option>
+                    <option value="intera Fast" style={{ background: "#0d1117" }}>intera Fast</option>
+                    <option value="intera Mini" style={{ background: "#0d1117" }}>intera Mini</option>
                   </select>
                 </div>
               </div>
             </div>
 
             <p className="text-center text-xs mt-2" style={{ color: "rgba(255,255,255,0.15)" }}>
-              Nexus can make mistakes. Verify important information.
+              intera can make mistakes. Verify important information.
             </p>
           </div>
         </div>
