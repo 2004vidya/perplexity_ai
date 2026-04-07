@@ -1,6 +1,6 @@
 import { initializeSocket } from "../service/chat.socket";
 import { sendMessage, getChats, getMessages, deleteChat } from "../service/chat.api";
-import { setChats, setCurrentChatId, setIsLoading, setError, createNewChat, addNewMessage } from "../chat.slice";
+import { setChats, setCurrentChatId, setIsLoading, setError, createNewChat, addNewMessage, setChatMessages } from "../chat.slice";
 
 import { useDispatch } from "react-redux";
 
@@ -36,9 +36,40 @@ export const useChat = () => {
         dispatch(setIsLoading(false));
         return data;
     }
+
+    async function handleGetChats(){
+        dispatch(setIsLoading(true));
+        const data = await getChats();
+        const {chats}= data;
+        dispatch(setChats(chats.reduce((acc,chat)=>{
+            acc[chat._id] = {
+                id:chat._id,
+                title:chat.title,
+                messages:[],
+                lastUpdated:chat.updatedAt
+            };
+            return acc;
+        },{})));
+        dispatch(setError(null));
+        dispatch(setIsLoading(false));
+        
+    }
+    
+    async function handleGetMessages(chatId){
+        dispatch(setIsLoading(true));
+        const data = await getMessages(chatId);
+        const { messages } = data;
+        // Store fetched messages into Redux for this chat
+        dispatch(setChatMessages({ chatId, messages }));
+        dispatch(setIsLoading(false));
+        return messages;
+    }
+
     return{
         initializeSocket,
         handleSendMessage,
+        handleGetChats,
+        handleGetMessages,
     }
 
 }    

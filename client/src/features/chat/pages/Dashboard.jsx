@@ -17,8 +17,9 @@
 //     <main className='h-screen w-full flex bg-neutral-800'>
       
 import { useState, useEffect, useRef } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useChat } from "../hooks/useChat";
+import { setCurrentChatId } from "../chat.slice";
 
 const navItems = [
   { icon: "⊹", label: "Discover", active: false },
@@ -27,12 +28,8 @@ const navItems = [
   { icon: "⋯", label: "More", active: false },
 ];
 
-const recentThreads = [
-  { id: 1, title: "Quantum computing basics", time: "2m ago", active: true },
-  { id: 2, title: "Market trends 2025", time: "1h ago", active: false },
-  { id: 3, title: "React architecture patterns", time: "3h ago", active: false },
-  { id: 4, title: "Neural net optimization", time: "Yesterday", active: false },
-];
+
+
 
 const suggestions = [
   "Explain dark matter simply",
@@ -54,7 +51,7 @@ function TypingIndicator() {
   );
 }
 
-function Sidebar({ active, setActive, threads, newThread }) {
+function Sidebar({ active, setActive, threads, newThread, onSelectChat }) {
   return (
     <aside
       className="flex flex-col h-full w-64 shrink-0"
@@ -149,6 +146,7 @@ function Sidebar({ active, setActive, threads, newThread }) {
           {threads.map((t) => (
             <div
               key={t.id}
+              onClick={() => onSelectChat(t.id)}
               className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-all duration-150"
               style={{
                 background: t.active ? "rgba(13,148,136,0.1)" : "transparent",
@@ -330,7 +328,7 @@ function ChatMessage({ msg, isNew }) {
 }
 
 export default function Dashboard() {
-  const { initializeSocket, handleSendMessage } = useChat();
+  const { initializeSocket, handleSendMessage, handleGetChats, handleGetMessages } = useChat();
   const {chats,currentChatId} = useSelector((state)=>state.chat);
   console.log('Current user:', chats);
 
@@ -341,18 +339,57 @@ export default function Dashboard() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeNav, setActiveNav] = useState("Search");
-  const [threads, setThreads] = useState(recentThreads);
   const [model, setModel] = useState("Nexus Pro");
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
+  // Derive threads array from Redux chats object
+  const threads = Object.values(chats).map((chat) => ({
+    id: chat.id,
+    title: chat.title,
+    time: chat.lastUpdated ? new Date(chat.lastUpdated).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "",
+    active: chat.id === currentChatId,
+  }));
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     initializeSocket();
-  }, [initializeSocket]);
+    handleGetChats();
+  }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Fetch and display messages when a chat is selected
+  useEffect(() => {
+    if (!currentChatId) {
+      setMessages([]);
+      return;
+    }
+    // If messages already loaded in Redux, use them
+    const cached = chats[currentChatId]?.messages;
+    if (cached && cached.length > 0) {
+      setMessages(cached.map((m, i) => ({
+        id: i,
+        role: m.role === "ai" ? "assistant" : m.role,
+        content: m.content,
+        isNew: false,
+      })));
+    } else {
+      // Fetch from API
+      handleGetMessages(currentChatId).then((fetched) => {
+        if (fetched) {
+          setMessages(fetched.map((m, i) => ({
+            id: i,
+            role: m.role === "ai" ? "assistant" : m.role,
+            content: m.content,
+            isNew: false,
+          })));
+        }
+      });
+    }
+  }, [currentChatId]);
 
   const sendMessage = async (text) => {
     const content = text || input.trim();
@@ -384,13 +421,16 @@ export default function Dashboard() {
     setLoading(false);
   };
 
+  const dispatch = useDispatch();
+
   const newThread = () => {
-    const id = Date.now();
-    setThreads((prev) => [
-      { id, title: "New conversation", time: "now", active: true },
-      ...prev.map((t) => ({ ...t, active: false })),
-    ]);
+    dispatch(setCurrentChatId(null));
     setMessages([]);
+  };
+
+  const handleSelectChat = (chatId) => {
+    dispatch(setCurrentChatId(chatId));
+    // messages will be loaded by the currentChatId useEffect above
   };
 
   return (
@@ -425,7 +465,7 @@ export default function Dashboard() {
         }}
       />
 
-      <Sidebar active={activeNav} setActive={setActiveNav} threads={threads} newThread={newThread} />
+      <Sidebar active={activeNav} setActive={setActiveNav} threads={threads} newThread={newThread} onSelectChat={handleSelectChat} />
 
       {/* Main */}
       <main className="flex flex-col flex-1 relative" style={{ zIndex: 1 }}>
