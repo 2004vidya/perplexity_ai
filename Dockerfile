@@ -11,7 +11,7 @@ COPY ./client/ .
 RUN npm run build
 
 # ---------- Step 2: Setup Backend ----------
-FROM node:18
+FROM node:20
 
 WORKDIR /app
 
