@@ -13,7 +13,7 @@ const __dirname = new URL('.', import.meta.url).pathname;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParsecurl -I http://localhost:3000r());
+app.use(cookieParser());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
 app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "..", "dist")));
