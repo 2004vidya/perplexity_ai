@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import userModel from "../models/user.model.js";
-import { sendEmail } from "../services/mail.service.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -20,19 +19,6 @@ const registerUser = async (req, res) => {
         }
 
         const user = await userModel.create({ username, email, password });
-        const emailverificationToken = jwt.sign({email: user.email}, process.env.JWT_SECRET,);
-        // await sendEmail({
-        //     to: email,
-        //     subject: "Verify your email",
-        //     text: "Please verify your email",
-        //     html: `
-        //     <div>
-        //         <p>Hello ${user.username},</p>
-        //         <p>Welcome to perplexity AI.Please verify your email by clicking on the link below</p>
-        //         <a href="http://localhost:3000/api/auth/verify-email?token=${emailverificationToken}">Verify your email</a>
-        //     </div>
-        //     `
-        // });
 
         res.status(201).json({ message: "User created successfully", success: true, user });
     } catch (error) {

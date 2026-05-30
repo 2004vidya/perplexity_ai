@@ -13,16 +13,9 @@ const __dirname = new URL('.', import.meta.url).pathname;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieParsecurl -I http://localhost:3000r());
 app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
 app.use(morgan("dev"));
-
-// Set relaxed CSP for development
-app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "default-src 'self' 'unsafe-inline' 'unsafe-eval' http: https: ws: wss:; script-src 'self' 'unsafe-inline' 'unsafe-eval';");
-  next();
-});
-
 app.use(express.static(path.join(__dirname, "..", "dist")));
 app.use("/api/auth", authRoutes);
 app.use("/api/chats", chatRoutes);
