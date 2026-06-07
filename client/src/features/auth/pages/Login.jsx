@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { useAuth } from '../hooks/useAuth';
-import { useSelector } from 'react-redux';
-import { Navigate } from 'react-router';
+import { useAuth } from '../hooks/useAuth'
+import { useSelector } from 'react-redux'
+import { Navigate } from 'react-router'
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -10,26 +10,22 @@ const Login = () => {
     password: '',
   })
 
-  const navigate = useNavigate();
-  const {handleLogin} = useAuth();
-  const user = useSelector((state) => state.auth.user);
-  const loading = useSelector((state) => state.auth.loading);
+  const navigate = useNavigate()
+  const { handleLogin } = useAuth()
+  const user = useSelector((state) => state.auth.user)
+  const authError = useSelector((state) => state.auth.error)
+  const loading = useSelector((state) => state.auth.loading)
 
-  if (!loading && user) {
-    return <Navigate to="/" />;
-  }
+  // Redirect if already logged in
+  if (!loading && user) return <Navigate to="/" />
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const  handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Login submitted:', formData)
-
-    await handleLogin(formData);
-    navigate("/");
-
+    await handleLogin(formData)
   }
 
   return (
@@ -108,12 +104,20 @@ const Login = () => {
               </div>
             </div>
 
+            {/* Error */}
+            {authError && (
+              <p className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 text-center">
+                {authError}
+              </p>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
-              className="w-full mt-2 py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-[#31b8c6] hover:bg-[#29a0ac] shadow-lg shadow-[#31b8c6]/30 hover:shadow-[#31b8c6]/50 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              disabled={loading}
+              className="w-full mt-2 py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-[#31b8c6] hover:bg-[#29a0ac] shadow-lg shadow-[#31b8c6]/30 hover:shadow-[#31b8c6]/50 active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Sign In
+              {loading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
 

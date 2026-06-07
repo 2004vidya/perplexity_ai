@@ -1,19 +1,35 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate } from 'react-router'
+import { useSelector, useDispatch } from 'react-redux'
+import { useAuth } from '../hooks/useAuth'
+import { setError } from '../auth.slice'
 
 const Register = () => {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-  })
+  const [formData, setFormData] = useState({ username: '', email: '', password: '' })
+  const submittedRef = useRef(false)
+
+  const { handleRegister } = useAuth()
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+  const authError = useSelector((state) => state.auth.error)
+  const loading = useSelector((state) => state.auth.loading)
+
+  // Navigate to login after a successful registration (loading done, no error, form was submitted)
+  useEffect(() => {
+    if (submittedRef.current && !loading && !authError) {
+      navigate('/login')
+    }
+  }, [loading, authError, navigate])
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log('Register submitted:', formData)
+    dispatch(setError(null))       // clear any previous error
+    submittedRef.current = true    // mark that this form triggered the submit
+    await handleRegister(formData)
   }
 
   return (
@@ -108,12 +124,20 @@ const Register = () => {
               </div>
             </div>
 
+            {/* Error */}
+            {authError && (
+              <p className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 text-center">
+                {authError}
+              </p>
+            )}
+
             {/* Submit */}
             <button
               type="submit"
-              className="w-full mt-2 py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-[#31b8c6] hover:bg-[#29a0ac] shadow-lg shadow-[#31b8c6]/30 hover:shadow-[#31b8c6]/50 active:scale-[0.98] transition-all duration-200 cursor-pointer"
+              disabled={loading}
+              className="w-full mt-2 py-2.5 px-4 rounded-lg font-semibold text-sm text-white bg-[#31b8c6] hover:bg-[#29a0ac] shadow-lg shadow-[#31b8c6]/30 hover:shadow-[#31b8c6]/50 active:scale-[0.98] transition-all duration-200 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Create Account
+              {loading ? 'Creating account…' : 'Create Account'}
             </button>
           </form>
 
