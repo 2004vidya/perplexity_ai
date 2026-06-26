@@ -339,7 +339,7 @@ export default function Dashboard() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeNav, setActiveNav] = useState("Search");
-  const [model, setModel] = useState("intera Pro");
+  // const [model, setModel] = useState("intera Pro");
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
@@ -508,49 +508,53 @@ export default function Dashboard() {
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-8">
-          <div className="max-w-2xl mx-auto min-h-full flex flex-col justify-end py-8">
-            {messages.map((msg) => (
-              <ChatMessage key={msg.id} msg={msg} isNew={msg.isNew} />
-            ))}
-
-            {/* Suggestions (shown when no messages) */}
-            {messages.length === 0 && (
-              <div className="flex flex-col items-center justify-center h-64 gap-6">
-                <div
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl"
-                  style={{
-                    background: "linear-gradient(135deg, #0d9488, #0891b2)",
-                    boxShadow: "0 0 32px rgba(13,148,136,0.3)",
-                  }}
-                >
-                  ✦
-                </div>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  What do you want to explore today?
-                </p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {suggestions.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => sendMessage(s)}
-                      className="text-xs px-4 py-2 rounded-xl transition-all duration-200"
-                      style={{
-                        background: "rgba(255,255,255,0.04)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        color: "rgba(255,255,255,0.5)",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.borderColor = "rgba(13,148,136,0.3)";
-                        e.currentTarget.style.color = "#2dd4bf";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
-                        e.currentTarget.style.color = "rgba(255,255,255,0.5)";
-                      }}
-                    >
-                      {s}
-                    </button>
-                  ))}
+          <div className="max-w-2xl mx-auto min-h-full flex flex-col py-8">
+            {messages.length > 0 ? (
+              <>
+                <div className="flex-grow" />
+                {messages.map((msg) => (
+                  <ChatMessage key={msg.id} msg={msg} isNew={msg.isNew} />
+                ))}
+              </>
+            ) : (
+              <div className="flex-grow flex flex-col items-center justify-center">
+                <div className="flex flex-col items-center justify-center h-64 gap-6">
+                  <div
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl"
+                    style={{
+                      background: "linear-gradient(135deg, #0d9488, #0891b2)",
+                      boxShadow: "0 0 32px rgba(13,148,136,0.3)",
+                    }}
+                  >
+                    ✦
+                  </div>
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    What do you want to explore today?
+                  </p>
+                  <div className="flex flex-wrap gap-2 justify-center">
+                    {suggestions.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => sendMessage(s)}
+                        className="text-xs px-4 py-2 rounded-xl transition-all duration-200"
+                        style={{
+                          background: "rgba(255,255,255,0.04)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          color: "rgba(255,255,255,0.5)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.borderColor = "rgba(13,148,136,0.3)";
+                          e.currentTarget.style.color = "#2dd4bf";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)";
+                          e.currentTarget.style.color = "rgba(255,255,255,0.5)";
+                        }}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
@@ -631,7 +635,7 @@ export default function Dashboard() {
                 </div>
 
                 {/* Model selector */}
-                <div className="flex items-center gap-1.5">
+                {/* <div className="flex items-center gap-1.5">
                   <div
                     className="w-1.5 h-1.5 rounded-full"
                     style={{ background: "#2dd4bf", boxShadow: "0 0 6px #2dd4bf" }}
@@ -646,7 +650,7 @@ export default function Dashboard() {
                     <option value="intera Fast" style={{ background: "#0d1117" }}>intera Fast</option>
                     <option value="intera Mini" style={{ background: "#0d1117" }}>intera Mini</option>
                   </select>
-                </div>
+                </div> */}
               </div>
             </div>
 

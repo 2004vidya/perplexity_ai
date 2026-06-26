@@ -17,7 +17,7 @@ const Register = () => {
   // Navigate to login after a successful registration (loading done, no error, form was submitted)
   useEffect(() => {
     if (submittedRef.current && !loading && !authError) {
-      navigate('/login')
+      navigate('/')
     }
   }, [loading, authError, navigate])
 
@@ -124,12 +124,12 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Error */}
+            {/* Error
             {authError && (
               <p className="text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg px-3 py-2 text-center">
                 {authError}
               </p>
-            )}
+            )} */}
 
             {/* Submit */}
             <button
