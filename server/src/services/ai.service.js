@@ -40,7 +40,7 @@ const searchInternetTool = tool(
   }
 )
 
-const agent = createAgent({
+export const agent = createAgent({
   model:geminiModel,
   tools:[searchInternetTool],
   systemMessage:"You are a helpful assistant that answers questions using the tools provided.If you need to search for up-to-date information on the internet, use the search_internet tool. If you have the answer in your knowledge base, use it."

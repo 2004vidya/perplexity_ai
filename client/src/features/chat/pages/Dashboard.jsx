@@ -19,7 +19,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useChat } from "../hooks/useChat";
-import { setCurrentChatId } from "../chat.slice";
+import { setCurrentChatId, createNewChat, addNewMessage } from "../chat.slice";
+import { getSocket } from "../service/chat.socket";
 
 const navItems = [
   { icon: "⊹", label: "Discover", active: false },
@@ -288,7 +289,7 @@ function ChatMessage({ msg, isNew }) {
               {msg.content}
             </div>
           )}
-          {!msg.typing && (
+          {!msg.typing && !msg.streaming && (
             <div className="flex items-center gap-2 mt-2 px-1">
               {["↗", "↓", "⧉", "↺"].map((icon, i) => (
                 <button
@@ -351,10 +352,90 @@ export default function Dashboard() {
     active: chat.id === currentChatId,
   }));
 
+  const currentChatIdRef = useRef(currentChatId);
+  const activeMessageContentRef = useRef("");
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    currentChatIdRef.current = currentChatId;
+  }, [currentChatId]);
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    initializeSocket();
+    const socket = initializeSocket();
     handleGetChats();
+
+    socket.on("ai_stream_start", ({ chatId, title }) => {
+      // If it's a new chat, setup the thread in Redux
+      dispatch(createNewChat({ chatId, title }));
+      dispatch(setCurrentChatId(chatId));
+    });
+
+    socket.on("ai_chunk", ({ chatId, content }) => {
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.role === "assistant" && (m.typing || m.streaming)) {
+            return { ...m, typing: false, streaming: true, content: m.content + content };
+          }
+          return m;
+        })
+      );
+    });
+
+    socket.on("ai_stream_end", ({ chatId, aiMessage }) => {
+      setLoading(false);
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.role === "assistant" && (m.typing || m.streaming)) {
+            return { ...m, typing: false, streaming: false, content: aiMessage.content };
+          }
+          return m;
+        })
+      );
+
+      // Persist the user and ai messages in Redux history
+      dispatch(addNewMessage({
+        chatId,
+        content: activeMessageContentRef.current,
+        role: "user"
+      }));
+      dispatch(addNewMessage({
+        chatId,
+        content: aiMessage.content,
+        role: "ai"
+      }));
+    });
+
+    socket.on("ai_error", ({ message }) => {
+      setLoading(false);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.typing || m.streaming
+            ? { ...m, typing: false, streaming: false, content: message || "Something went wrong. Please try again." }
+            : m
+        )
+      );
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket connection error:", err.message);
+      setLoading(false);
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.typing || m.streaming
+            ? { ...m, typing: false, streaming: false, content: "Connection failed. Please verify your login session." }
+            : m
+        )
+      );
+    });
+
+    return () => {
+      socket.off("ai_stream_start");
+      socket.off("ai_chunk");
+      socket.off("ai_stream_end");
+      socket.off("ai_error");
+      socket.off("connect_error");
+    };
   }, []);
 
   useEffect(() => {
@@ -396,32 +477,28 @@ export default function Dashboard() {
     if (!content || loading) return;
     setInput("");
 
+    activeMessageContentRef.current = content;
+
     const userMsg = { id: Date.now(), role: "user", content, isNew: true };
     const typingMsg = { id: Date.now() + 1, role: "assistant", typing: true, content: "", isNew: true };
     setMessages((prev) => [...prev, userMsg, typingMsg]);
     setLoading(true);
 
     try {
-      const data = await handleSendMessage({ message: content, chatId: currentChatId });
-      const reply = data?.aiMessage?.content || "I'm here to help!";
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.typing ? { ...m, typing: false, content: reply } : m
-        )
-      );
-    } catch {
+      const socket = getSocket();
+      socket.emit("send_message", { message: content, chatId: currentChatIdRef.current });
+    } catch (err) {
+      console.error(err);
       setMessages((prev) =>
         prev.map((m) =>
           m.typing
-            ? { ...m, typing: false, content: "Something went wrong. Please try again." }
+            ? { ...m, typing: false, content: "Failed to connect to chat server." }
             : m
         )
       );
+      setLoading(false);
     }
-    setLoading(false);
   };
-
-  const dispatch = useDispatch();
 
   const newThread = () => {
     dispatch(setCurrentChatId(null));
